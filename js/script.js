@@ -15,7 +15,6 @@ var nyArticles = function(searchTerm) {
                 url: url,
                 method: 'GET',
             }).done(function(result) {
-                console.log(result);
                 var $nytElem = $('#nytimes-articles');
 
                 for (var i = 0; i < result.response.docs.length; i++) {
@@ -43,9 +42,34 @@ var nyArticles = function(searchTerm) {
             });
         });
 
-
-
 };
+
+function wikipediaArticles(searchTerm) {
+    var url = 'https://en.wikipedia.org/w/api.php?format=json&action=opensearch&search=' + searchTerm + '&format=json&callback=wikiCallback';
+
+    //If the ajax request fails
+    var wikipediaRequestTimeout = setTimeout(function() {
+        $wikiElem.text('Failed to get Wikipeda Articles');
+    }, 8000);
+
+    //For wikipedia we make a jasonp request
+    $.ajax({
+        url: url,
+        method: 'GET',
+        dataType: 'jsonp'
+    }).success(function(result) {
+        var articles = result[1];
+
+        $wikiElem = $('#wikipedia-links');
+
+        for (var i = 0; i < articles.length; i++) {
+            var articleURL = 'http://en.wikipedia.org/wiki/' + articles[i];
+            $wikiElem.append('<li><a href="' + articleURL + '">' + articles[i] + '</a></li>');
+            clearTimeout(wikipediaRequestTimeout);
+        }
+
+    });
+}
 
 function loadData() {
 
@@ -64,15 +88,17 @@ function loadData() {
     // YOUR CODE GOES HERE!
     var googleString = "http://maps.googleapis.com/maps/api/streetview?size=600x300&location="
     var street = $('#street').val();
+    console.log(street);
     var city = $('#city').val();
     var img = document.createElement('img');
     img.className = 'bgimg';
     img.src = googleString + street + ', ' + city;
-    console.log(img);
     $body.append(img);
-
-    //NYT
+    //NYT articles
     nyArticles(city);
+
+    //Wikipedia articles
+    wikipediaArticles(city);
 
     return false;
 };
